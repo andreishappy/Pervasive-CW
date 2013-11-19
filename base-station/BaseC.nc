@@ -10,7 +10,6 @@ module BaseC
   uses interface Timer<TMilli> as SensorTimer;
   uses interface Leds;
   uses interface Boot;
-  uses interface Read<uint16_t> as Temp_Sensor;
 
   ///* Solution 2, implement the Radio stack*********/.
   uses interface SplitControl;
@@ -124,26 +123,5 @@ implementation
         SerialAMBusy = FALSE;
    
     }
-
-
-  ///*** END Solution 3. **********************************/
-
-  ///******** Sensor Reading code *******************/
-  event void Temp_Sensor.readDone(error_t result, uint16_t data) {
-    // Solution 4. Send data to the basestation.
-    DataMsg * pkt = (DataMsg *)(call DataPacket.getPayload(&datapkt, sizeof(DataMsg)));
-    pkt->srcid          = TOS_NODE_ID;
-    pkt->sync_p         = 255;
-    pkt->temp           = data;
-    pkt->avg_temp       = 255;
-
-    if (AMBusy) {
-    }
-    else {
-        if (call DataSend.send(255, &datapkt, sizeof(DataMsg)) == SUCCESS) {
-            AMBusy = TRUE;
-        }
-    } 
-  }
 }
 
