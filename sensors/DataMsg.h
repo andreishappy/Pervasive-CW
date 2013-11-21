@@ -1,19 +1,15 @@
-#ifndef DATAMSG_H
+//#ifndef DATAMSG_H
 #define DATAMSG_H
 
 enum {
-	BASESTATION_ID = 32,	
-	AM_DATAMSG  = 9,
-    DATAMSG_HEADER  = 0x99,
-
+	AM_DATAMSG = 9,
+	DATAMSG_HEADER = 0x99,
 };
 
 typedef nx_struct DataMsg {
-    nx_uint8_t srcid;
-    //nx_uint16_t sync_p;
-    nx_uint16_t temp;
-    //nx_uint16_t avg_temp;
-    nx_uint16_t light;
+	nx_uint8_t srcid;
+	nx_uint16_t sync_p;
+	nx_uint16_t temp; //NULL if no temp
+	nx_uint16_t photo; //NULL if no photo
+	nx_uint16_t isFire; //0 means no fire and 1 means fire
 } DataMsg;
-
-#endif
