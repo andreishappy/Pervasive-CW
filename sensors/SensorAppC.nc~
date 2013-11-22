@@ -25,7 +25,7 @@ implementation
   components SerialActiveMessageC;
   ///********* Solution 3. Message type parameters************************/
   ///****Note: These parameters are enumerated values defined in the message type header file SerialMsg.h*********/
-  components new SerialAMSenderC(AM_SERIALMSG) as SerialSender;
+  //components new SerialAMSenderC(AM_SERIALMSG) as SerialSender;
 
 
   //components new SerialAMReceiverC(AM_SERIALMSG) as SerialReceiver; 
@@ -45,10 +45,10 @@ implementation
   SensorC.DataReceive -> DataReceiver;
 
   ///********* Solution 3. Wiring in Serial stack components**********************/
-  SensorC.SerialAMControl -> SerialActiveMessageC;
-  SensorC.SerialPacket -> SerialSender;
-  SensorC.SerialSend -> SerialSender;
-  //DON'T NEED
+  //DON'T NEED  
+  //SensorC.SerialAMControl -> SerialActiveMessageC;
+  //SensorC.SerialPacket -> SerialSender;
+  //SensorC.SerialSend -> SerialSender;
   //SensorC.SerialReceive -> SerialReceiver;
 }
 

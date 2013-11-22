@@ -9,7 +9,6 @@ implementation
   components MainC, SensorC, LedsC;
   components new TimerMilliC() as SensorTimer;
 
-
   //*****  Sensors
   components new TempC() as Temp_Sensor;
   components new PhotoC() as Light_Sensor;

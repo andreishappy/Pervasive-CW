@@ -3,9 +3,7 @@
 
 #include "Timer.h"
 #include "DataMsg.h"
-#include "SerialMsg.h"
 
-module SensorC
 {
   uses interface Timer<TMilli> as SensorTimer;
   uses interface Leds;
@@ -85,7 +83,7 @@ implementation
     } 
 
     event void DataSend.sendDone(message_t * msg, error_t error) {
-        if (&datapkt == msg) {
+        /*if (&datapkt == msg) {
             AMBusy = FALSE;
 	    pkt = (DataMsg *)(call DataPacket.getPayload(&datapkt, sizeof(DataMsg)));
              pkt->srcid          = TOS_NODE_ID;
@@ -93,7 +91,7 @@ implementation
              pkt->temp           = -1;
              pkt->light          = -1;
              //pkt->avg_temp       = 255;
-        }
+        }*/
     }
 
     event message_t * DataReceive.receive(message_t * msg, void * payload, uint8_t len) {
@@ -131,7 +129,7 @@ implementation
 
   event void Light_Sensor.readDone(error_t result, uint16_t data) {
     // Solution 4. Send data to the basestation.
-    pkt = (DataMsg *)(call DataPacket.getPayload(&datapkt, sizeof(DataMsg)));
+    /*pkt = (DataMsg *)(call DataPacket.getPayload(&datapkt, sizeof(DataMsg)));
      pkt->srcid          = TOS_NODE_ID;
      //pkt->sync_p       = 255;
      pkt->light           = data;
@@ -150,12 +148,12 @@ implementation
 	        call Leds.led1Toggle();
                 }
              }
-     } 
+     } */
   }
 
   ///******** Sensor Reading code *******************/
   event void Temp_Sensor.readDone(error_t result, uint16_t data) {
-    // Solution 4. Send data to the basestation.
+    /*// Solution 4. Send data to the basestation.
     pkt = (DataMsg *)(call DataPacket.getPayload(&datapkt, sizeof(DataMsg)));
      pkt->srcid          = TOS_NODE_ID;
      //pkt->sync_p       = 255;
@@ -175,7 +173,7 @@ implementation
 	        call Leds.led1Toggle();
                 }
              }
-    } 
+    } */
   }
 }
 
