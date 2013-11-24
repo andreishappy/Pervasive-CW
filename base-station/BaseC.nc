@@ -92,6 +92,8 @@ implementation
       s_pkt->header      = SERIALMSG_HEADER;
       s_pkt->srcid       = TOS_NODE_ID;
       s_pkt->temperature    = d_pkt->temp;
+      s_pkt->photo = d_pkt->photo;
+      s_pkt->isFire = d_pkt->isFire;
       s_pkt->signal_strength = call CC2420Packet.getRssi(msg) - 45;
       
       if(SerialAMBusy) {      

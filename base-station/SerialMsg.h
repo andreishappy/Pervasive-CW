@@ -13,6 +13,7 @@ typedef nx_struct SerialMsg {
 	nx_int16_t temperature;
 	nx_int16_t photo;
 	nx_int16_t isFire;
+        nx_int16_t signal_strength;
 } SerialMsg;
 
 
