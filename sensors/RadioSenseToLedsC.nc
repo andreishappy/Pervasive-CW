@@ -80,9 +80,10 @@ module RadioSenseToLedsC @safe(){
 implementation {
 
   uint16_t temperatures[30];
-  uint8_t temp_index = 0;
-  
-  
+  uint8_t temp_index = 100;
+  nx_uint8_t neighbours[2];
+  nx_uint8_t is_dark[2];
+
     
   message_t packet;
   bool locked = FALSE;
@@ -94,6 +95,10 @@ implementation {
 
   event void RadioControl.startDone(error_t err) {
     if (err == SUCCESS) {
+        uint8_t i;
+        for (i=0; i<2; i++) {
+            neighbours[i] = 0;
+        }
       call SensorTimer.startPeriodic(1024);
     }
   }
@@ -131,7 +136,18 @@ implementation {
   }
 
   void add_temperature(uint16_t temp) {
+      uint8_t i;
+      
+      //Do initial insert
+      if (temp_index == 100) {
+          for (i=0; i<30; i++) {
+              temperatures[i] = temp;
+          }
+          temp_index = 0;
+      }
+      
       temperatures[temp_index] = temp;
+      //Increment the index
       if (temp_index < 29) temp_index++;
       else temp_index = 0;
   }
@@ -141,20 +157,28 @@ implementation {
        uint16_t max = temperatures[0];
        uint16_t current;
        uint8_t i;
-      for (i=0; i<temp_index; i++) {
+       
+      for (i=1; i<30; i++) {
           current = temperatures[i];
           if (current < min) {
               min = current;
-              blink_green();
           }
           if (current > max) {
               max = current;
-              blink_green();
           }
       }
-       return max - min > 20;
+       return max - min > 5;
   }
    
+   uint8_t neighbours_dark() {
+       uint8_t i;
+       uint8_t result = 0;
+       
+       for (i=0; i<2; i++) {
+           if (is_dark[i]) result++;
+       }
+       return result;
+   }
    
   event void TempSensor.readDone(error_t result, uint16_t data) {
     blink_yellow();  
@@ -168,20 +192,22 @@ implementation {
       if (msg == NULL) {
 	return;
       }
+      
       msg -> temp = data;
       msg -> photo = light_reading;
-      msg -> isFire = 0;
+      add_temperature(data);
+      
+      if (neighbours_dark() > 0) blink_green();
+      if (raised_temperature() && neighbours_dark() == 2) {
+          blink_red();
+          msg -> isFire = 1;
+      }
+      else msg -> isFire = 0;
+
+      msg->srcid = TOS_NODE_ID;
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(DataMsg)) == SUCCESS) {
 	locked = TRUE;
-      }
-      
-      add_temperature(data);
-      if (raised_temperature()) {
-          blink_red();
-      }
-      
-      
-      
+      }      
     }
   }
 
@@ -190,7 +216,31 @@ implementation {
       call TempSensor.read();
   }
 
-
+  void log_dark_for(nx_uint8_t srcid, uint8_t dark) {
+      uint8_t current = 10;
+      uint8_t i;
+      for (i=0; i<2; i++) {
+          if (neighbours[i] == 0) {
+              //blink_red();
+              break;
+          }
+          
+          if (neighbours[i] == srcid) {
+              //blink_green();
+              current = i;
+              break;
+          }     
+      }
+      
+      if (current == 10) {
+          //blink_green();
+          neighbours[i] = srcid;
+          is_dark[i] = dark;
+      } else {
+          //blink_red();
+          is_dark[current] = dark;
+      }
+  }
   event message_t* Receive.receive(message_t* bufPtr, 
 				   void* payload, uint8_t len) {
     if (len != sizeof(DataMsg)) {return bufPtr;}
@@ -198,8 +248,12 @@ implementation {
       DataMsg* msg = (DataMsg*)payload;
       
       if (msg -> photo < 100) {
-          blink_green();
+          log_dark_for(msg->srcid,1);
+          //blink_green();
       }//read in the values
+      else {
+          log_dark_for(msg->srcid,0);
+      }
       return bufPtr;
     }
   }
