@@ -1,4 +1,7 @@
 COMPONENT=RadioSenseToLedsAppC
+SENSORBOARD=mda100
+CFLAGS += -I$(TOSDIR)/sensorboards/mda100/ca
+
 BUILD_EXTRA_DEPS = RadioSenseMsg.py RadioSenseMsg.class
 
 RadioSenseMsg.py: RadioSenseToLeds.h

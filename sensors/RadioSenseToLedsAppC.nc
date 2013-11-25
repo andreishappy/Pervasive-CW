@@ -40,8 +40,8 @@
  * 94704.  Attention:  Intel License Inquiry.
  */
  
-#include "RadioSenseToLeds.h"
-
+#include "DataMsg.h"
+#include <message.h>
 /**
  * Configuration for the RadioSenseToLeds application.  RadioSenseToLeds samples 
  * a platform's default sensor at 4Hz and broadcasts this value in an AM packet. 
@@ -54,22 +54,26 @@
  */
 
 configuration RadioSenseToLedsAppC {}
-implementation {
-  components MainC, RadioSenseToLedsC as App, LedsC, new DemoSensorC();
-  components ActiveMessageC;
-  components new AMSenderC(AM_RADIO_SENSE_MSG);
-  components new AMReceiverC(AM_RADIO_SENSE_MSG);
+implementation {  
+  components MainC;
+  components RadioSenseToLedsC as App;
+  components LedsC;
+  components new TempC() as TempSensor;
+  components new PhotoC() as LightSensor;
+  components new AMSenderC(AM_DATAMSG);
+  components new AMReceiverC(AM_DATAMSG);
   components new TimerMilliC() as SensorTimer;
   components new TimerMilliC() as RedTimer;
   components new TimerMilliC() as GreenTimer;
   components new TimerMilliC() as YellowTimer;
-  components new PhotoC as LightSensor;
-  components new TempC as TempSensor;
+  components ActiveMessageC;
 
 
   
   App.Boot -> MainC.Boot;
   
+  App.LightSensor -> LightSensor;
+  App.TempSensor -> TempSensor;
   App.Receive -> AMReceiverC;
   App.AMSend -> AMSenderC;
   App.RadioControl -> ActiveMessageC;
@@ -79,10 +83,7 @@ implementation {
   App.YellowTimer -> YellowTimer;
   App.RedTimer -> RedTimer;
   App.Packet -> AMSenderC;
-  App.Read -> DemoSensorC;
 
-  App.PhotoC -> LightSensor;
-  App.TempC -> TempSensor;
 
 
 }

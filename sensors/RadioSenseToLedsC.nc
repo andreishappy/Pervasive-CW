@@ -41,8 +41,10 @@
  */
  
 #include "Timer.h"
-#include "RadioSenseToLeds.h"
 #include "DataMsg.h"
+#include <message.h>
+#include "Timer.h"
+
 
 /**
  * Implementation of the RadioSenseToLeds application.  RadioSenseToLeds samples 
@@ -59,6 +61,8 @@ module RadioSenseToLedsC @safe(){
   uses {
     interface Leds;
     interface Boot;
+    interface Read<uint16_t> as TempSensor;
+    interface Read<uint16_t> as LightSensor;
     interface Receive;
     interface AMSend;
     interface Timer<TMilli> as SensorTimer;
@@ -66,11 +70,8 @@ module RadioSenseToLedsC @safe(){
     interface Timer<TMilli> as RedTimer;
     interface Timer<TMilli> as YellowTimer;
 
-    
-
     interface Packet;
-    interface Read<uint16_t> as TempSensor;
-    interface Read<uint16_t> as LightSensor;
+
 
      
     interface SplitControl as RadioControl;
@@ -80,20 +81,21 @@ implementation {
 
   message_t packet;
   bool locked = FALSE;
-   
+  uint16_t light_reading; 
+  
   event void Boot.booted() {
     call RadioControl.start();
   }
 
   event void RadioControl.startDone(error_t err) {
     if (err == SUCCESS) {
-      call SensorTimer.startPeriodic(250);
+      call SensorTimer.startPeriodic(1024);
     }
   }
   event void RadioControl.stopDone(error_t err) {}
   
   event void SensorTimer.fired() {
-    call Read.read();
+    call LightSensor.read();
   }
 
   void blink_yellow() {
@@ -125,38 +127,39 @@ implementation {
 
 
   event void TempSensor.readDone(error_t result, uint16_t data) {
-    call Leds.led0Toggle();
+    blink_yellow();  
     if (locked) {
       return;
     }
     else {
-      radio_sense_msg_t* rsm;
+      DataMsg* msg;
 
-      rsm = (radio_sense_msg_t*)call Packet.getPayload(&packet, sizeof(radio_sense_msg_t));
-      if (rsm == NULL) {
+      msg = (DataMsg*)call Packet.getPayload(&packet, sizeof(DataMsg));
+      if (msg == NULL) {
 	return;
       }
-      rsm->error = result;
-      rsm->data = data;
-      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_sense_msg_t)) == SUCCESS) {
+      msg -> temp = data;
+      msg -> photo = light_reading;
+      msg -> isFire = 0;
+      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(DataMsg)) == SUCCESS) {
 	locked = TRUE;
       }
     }
   }
 
   event void LightSensor.readDone(error_t result, uint16_t data) {
-    
+      light_reading = data;
+      call TempSensor.read();
   }
 
 
   event message_t* Receive.receive(message_t* bufPtr, 
 				   void* payload, uint8_t len) {
-    call Leds.led1Toggle();
-    if (len != sizeof(radio_sense_msg_t)) {return bufPtr;}
+    if (len != sizeof(DataMsg)) {return bufPtr;}
     else {
-      radio_sense_msg_t* rsm = (radio_sense_msg_t*)payload;
-      uint16_t val = rsm->data;
-      blink_yellow();
+      DataMsg* msg = (DataMsg*)payload;
+      //read in the values
+      blink_red();
       return bufPtr;
     }
   }

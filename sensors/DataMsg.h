@@ -1,4 +1,4 @@
-//#ifndef DATAMSG_H
+#ifndef DATAMSG_H
 #define DATAMSG_H
 
 enum {
@@ -13,3 +13,5 @@ typedef nx_struct DataMsg {
 	nx_uint16_t photo; //NULL if no photo
 	nx_uint16_t isFire; //0 means no fire and 1 means fire
 } DataMsg;
+
+#endif
