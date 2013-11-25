@@ -67,8 +67,7 @@ implementation {
   components new TimerMilliC() as GreenTimer;
   components new TimerMilliC() as YellowTimer;
   components ActiveMessageC;
-
-
+  
   
   App.Boot -> MainC.Boot;
   
