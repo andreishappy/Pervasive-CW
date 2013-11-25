@@ -79,6 +79,11 @@ module RadioSenseToLedsC @safe(){
 }
 implementation {
 
+  uint16_t temperatures[30];
+  uint8_t temp_index = 0;
+  
+  
+    
   message_t packet;
   bool locked = FALSE;
   uint16_t light_reading; 
@@ -100,17 +105,17 @@ implementation {
 
   void blink_yellow() {
     call Leds.led2Toggle();
-    call YellowTimer.startOneShot(100);
+    call YellowTimer.startOneShot(20);
   }
 
   void blink_red() {
     call Leds.led0Toggle();
-    call RedTimer.startOneShot(100);
+    call RedTimer.startOneShot(20);
   }
 
   void blink_green() {
     call Leds.led1Toggle();
-    call GreenTimer.startOneShot(100);
+    call GreenTimer.startOneShot(20);
   }
  
   event void YellowTimer.fired() {
@@ -125,7 +130,32 @@ implementation {
     call Leds.led1Toggle();
   }
 
-
+  void add_temperature(uint16_t temp) {
+      temperatures[temp_index] = temp;
+      if (temp_index < 29) temp_index++;
+      else temp_index = 0;
+  }
+  
+   bool raised_temperature() {
+       uint16_t min = temperatures[0];
+       uint16_t max = temperatures[0];
+       uint16_t current;
+       uint8_t i;
+      for (i=0; i<temp_index; i++) {
+          current = temperatures[i];
+          if (current < min) {
+              min = current;
+              blink_green();
+          }
+          if (current > max) {
+              max = current;
+              blink_green();
+          }
+      }
+       return max - min > 20;
+  }
+   
+   
   event void TempSensor.readDone(error_t result, uint16_t data) {
     blink_yellow();  
     if (locked) {
@@ -144,6 +174,14 @@ implementation {
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(DataMsg)) == SUCCESS) {
 	locked = TRUE;
       }
+      
+      add_temperature(data);
+      if (raised_temperature()) {
+          blink_red();
+      }
+      
+      
+      
     }
   }
 
@@ -158,8 +196,10 @@ implementation {
     if (len != sizeof(DataMsg)) {return bufPtr;}
     else {
       DataMsg* msg = (DataMsg*)payload;
-      //read in the values
-      blink_red();
+      
+      if (msg -> photo < 100) {
+          blink_green();
+      }//read in the values
       return bufPtr;
     }
   }
