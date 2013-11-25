@@ -46,9 +46,9 @@ public class UserReadable implements MessageListener{
         double a = 0.001010024;
         double b = 0.000242127;
         double c = 0.000000146;
-        double Rthr = 10 * (1023 - tempInADC)/tempInADC;
+        double Rthr = 10 * (1023 - tempInADC)/(double)tempInADC;
         
-        double answer = 1 / (a + (b * Math.log(Rthr)) + (c * Math.pow(Math.log(Rthr), 3)));
+        double answer = 1 / (double) (a + (b * Math.log(Rthr)) + (c * Math.pow(Math.log(Rthr), 3)));
         
         return answer;
     }
