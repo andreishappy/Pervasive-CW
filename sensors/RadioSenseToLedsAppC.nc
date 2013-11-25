@@ -63,7 +63,8 @@ implementation {
   components new TimerMilliC() as RedTimer;
   components new TimerMilliC() as GreenTimer;
   components new TimerMilliC() as YellowTimer;
-  
+  components new PhotoC as LightSensor;
+  components new TempC as TempSensor;
 
 
   
@@ -79,6 +80,9 @@ implementation {
   App.RedTimer -> RedTimer;
   App.Packet -> AMSenderC;
   App.Read -> DemoSensorC;
+
+  App.PhotoC -> LightSensor;
+  App.TempC -> TempSensor;
 
 
 }

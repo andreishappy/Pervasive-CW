@@ -42,6 +42,7 @@
  
 #include "Timer.h"
 #include "RadioSenseToLeds.h"
+#include "DataMsg.h"
 
 /**
  * Implementation of the RadioSenseToLeds application.  RadioSenseToLeds samples 
@@ -65,8 +66,13 @@ module RadioSenseToLedsC @safe(){
     interface Timer<TMilli> as RedTimer;
     interface Timer<TMilli> as YellowTimer;
 
+    
+
     interface Packet;
-    interface Read<uint16_t>;
+    interface Read<uint16_t> as TempSensor;
+    interface Read<uint16_t> as LightSensor;
+
+     
     interface SplitControl as RadioControl;
   }
 }
@@ -90,27 +96,35 @@ implementation {
     call Read.read();
   }
 
-  event void GreenTimer.fired() {
-    //Implementation to turn it off
-  }
-
-
   void blink_yellow() {
     call Leds.led2Toggle();
     call YellowTimer.startOneShot(100);
   }
 
+  void blink_red() {
+    call Leds.led0Toggle();
+    call RedTimer.startOneShot(100);
+  }
+
+  void blink_green() {
+    call Leds.led1Toggle();
+    call GreenTimer.startOneShot(100);
+  }
  
   event void YellowTimer.fired() {
     call Leds.led2Toggle();
   }
 
   event void RedTimer.fired() {
+    call Leds.led0Toggle();
+  }
+
+  event void GreenTimer.fired() {
+    call Leds.led1Toggle();
   }
 
 
-
-  event void Read.readDone(error_t result, uint16_t data) {
+  event void TempSensor.readDone(error_t result, uint16_t data) {
     call Leds.led0Toggle();
     if (locked) {
       return;
@@ -129,6 +143,11 @@ implementation {
       }
     }
   }
+
+  event void LightSensor.readDone(error_t result, uint16_t data) {
+    
+  }
+
 
   event message_t* Receive.receive(message_t* bufPtr, 
 				   void* payload, uint8_t len) {
