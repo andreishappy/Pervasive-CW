@@ -7,123 +7,122 @@
 
 module BaseC
 {
-  uses interface Timer<TMilli> as SensorTimer;
-  uses interface Leds;
-  uses interface Boot;
+    uses interface Timer<TMilli> as SensorTimer;
+    uses interface Leds;
+    uses interface Boot;
 
-  ///* Solution 2, implement the Radio stack*********/.
-  uses interface SplitControl;
-  uses interface CC2420Packet;
-  uses interface Receive as DataReceive;
+    ///* Solution 2, implement the Radio stack*********/.
+    uses interface SplitControl;
+    uses interface CC2420Packet;
+    uses interface Receive as DataReceive;
 
-  ///* Solution 3, implement the Serial stack.*************/
-  uses interface SplitControl as SerialAMControl;
-  uses interface Packet as SerialPacket;
-  uses interface AMSend as SerialSend;
+    ///* Solution 3, implement the Serial stack.*************/
+    uses interface SplitControl as SerialAMControl;
+    uses interface Packet as SerialPacket;
+    uses interface AMSend as SerialSend;
 }
-implementation
-{
 
-  enum{
-    SAMPLE_PERIOD = 1024,
-     };
+implementation{
 
-  uint16_t temperature_value;
-  ///****Solution 2, implement radio stack.***************************/  
-  message_t datapkt;
-  bool AMBusy;
-  
-  ///************ Solution 3, implement serial stack.*****************/
-  message_t serialpkt;
-  bool SerialAMBusy;
+    enum {
+        SAMPLE_PERIOD = 1024,
+    };
 
-  event void Boot.booted()
-  {
-    temperature_value = 0;
-    //call SensorTimer.startPeriodic(SAMPLE_PERIOD );
-    ///************** Solution 2. start radio stack******************/
-    call SplitControl.start();
-    // Solution 3. start serial stack.
-    call SerialAMControl.start();
+    uint16_t temperature_value;
+    ///****Solution 2, implement radio stack.***************************/  
+    message_t datapkt;
+    bool AMBusy;
+
+    ///************ Solution 3, implement serial stack.*****************/
+    message_t serialpkt;
+    bool SerialAMBusy;
+
+    event void Boot.booted() {
+        temperature_value = 0;
+        //call SensorTimer.startPeriodic(SAMPLE_PERIOD );
+        ///************** Solution 2. start radio stack******************/
+        call SplitControl.start();
+        // Solution 3. start serial stack.
+        call SerialAMControl.start();
 
 
-  }
+    }
 
-  event void SensorTimer.fired()
-  {
-    /*
-    call Leds.led0Toggle();
-    call Temp_Sensor.read();
-    */
-  }
+    event void SensorTimer.fired() {
+        /*
+        call Leds.led0Toggle();
+        call Temp_Sensor.read();
+         */
+    }
 
-  
-///***** Solution 2. implement radio stack *******************************/
 
-   event void SplitControl.stopDone(error_t err) {
-        if(err == SUCCESS){
+    ///***** Solution 2. implement radio stack *******************************/
+
+    event void SplitControl.stopDone(error_t err) {
+        if (err == SUCCESS) {
         }
     }
-    
+
     event void SplitControl.startDone(error_t err) {
         if (err == SUCCESS) {
-            AMBusy    = FALSE;
+            AMBusy = FALSE;
         }
-    } 
+    }
 
     event message_t * DataReceive.receive(message_t * msg, void * payload, uint8_t len) {
-      
-      SerialMsg * s_pkt = NULL;
-      DataMsg * d_pkt = NULL;  
 
-  
-      if(len == sizeof(DataMsg)) {
-        d_pkt = (DataMsg *) payload;
-	if (d_pkt->srcid == 29) {
-	        call Leds.led1Toggle();  
+        SerialMsg * s_pkt = NULL;
+        DataMsg * d_pkt = NULL;
 
-		}
 
-      } 
-        
-      ///***** Solution 3. implement serial stack****************************/
-      s_pkt = (SerialMsg *)(call SerialPacket.getPayload(&serialpkt, sizeof(SerialMsg)));
-        
-      s_pkt->header      = SERIALMSG_HEADER;
-      s_pkt->srcid       = TOS_NODE_ID;
-      s_pkt->temperature    = d_pkt->temp;
-      s_pkt->photo = d_pkt->photo;
-      s_pkt->isFire = d_pkt->isFire;
-      s_pkt->signal_strength = call CC2420Packet.getRssi(msg) - 45;
-      
-      if(SerialAMBusy) {      
-      }
-      else {
-        if (call SerialSend.send(AM_BROADCAST_ADDR, &serialpkt, sizeof(SerialMsg)) == SUCCESS) {
-            SerialAMBusy = TRUE;
+        if (len == sizeof (DataMsg)) {
+            d_pkt = (DataMsg *) payload;
+            if (d_pkt->srcid == 29) {
+                call Leds.led1Toggle();
+
+            }
+
+
+
+            ///***** Solution 3. implement serial stack****************************/
+            s_pkt = (SerialMsg *) (call SerialPacket.getPayload(&serialpkt, sizeof (SerialMsg)));
+
+            s_pkt->header = SERIALMSG_HEADER;
+            s_pkt->srcid = d_pkt->srcid;
+            s_pkt->temperature = d_pkt->temp;
+            s_pkt->photo = d_pkt->photo;
+            s_pkt->isFire = d_pkt->isFire;
+            s_pkt->signal_strength = call CC2420Packet.getRssi(msg) - 45;
+
+            if (SerialAMBusy) {
+            } else {
+                if (call SerialSend.send(AM_BROADCAST_ADDR, &serialpkt, sizeof (SerialMsg)) == SUCCESS) {
+                    SerialAMBusy = TRUE;
+                }
+            }
+            call Leds.led0Toggle();
         }
-      } 
-      call Leds.led0Toggle();  
-      return msg;
+        return msg;
     }
 
-  ///*** END Solution 2. *********************************/
+    ///*** END Solution 2. *********************************/
 
- ///********** Solution 3. implement serial stack. ******/
+    ///********** Solution 3. implement serial stack. ******/
 
     event void SerialAMControl.stopDone(error_t err) {
-        if(err == SUCCESS){
+        if (err == SUCCESS) {
         }
     }
-    
+
     event void SerialAMControl.startDone(error_t err) {
         if (err == SUCCESS) {
-            SerialAMBusy    = FALSE;
+            SerialAMBusy = FALSE;
         }
-    } 
+    }
+
     event void SerialSend.sendDone(message_t *msg, error_t error) {
         SerialAMBusy = FALSE;
-   
+
     }
 }
 
