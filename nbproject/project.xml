@@ -5,7 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>Pervasive CW</name>
             <source-roots>
-                <root id="src.dir"/>
+                <root id="src.dir" name="base-station"/>
                 <root id="sensors.dir"/>
             </source-roots>
             <test-roots/>
