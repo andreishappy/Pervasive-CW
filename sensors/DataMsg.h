@@ -14,4 +14,16 @@ typedef nx_struct DataMsg {
 	nx_uint16_t isFire; //0 means no fire and 1 means fire
 } DataMsg;
 
+typedef nx_struct FireMsg {
+    nx_uint8_t srcid;
+    nx_uint16_t sync_p;
+    nx_uint16_t fire;
+} FireMsg;
+
+typedef struct neighbour {
+    nx_uint8_t id;
+    uint8_t isDark;
+} neighbour;
+
+
 #endif
