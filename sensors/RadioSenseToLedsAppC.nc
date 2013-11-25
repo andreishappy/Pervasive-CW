@@ -60,28 +60,35 @@ implementation {
   components LedsC;
   components new TempC() as TempSensor;
   components new PhotoC() as LightSensor;
-  components new AMSenderC(AM_DATAMSG);
-  components new AMReceiverC(AM_DATAMSG);
+  
+  //Time sync packets
+  components TimeSyncMessageC;
+  components ActiveMessageC;
+  //components new AMSenderC(AM_DATAMSG);
+  //components new AMReceiverC(AM_DATAMSG);
   components new TimerMilliC() as SensorTimer;
   components new TimerMilliC() as RedTimer;
   components new TimerMilliC() as GreenTimer;
   components new TimerMilliC() as YellowTimer;
-  components ActiveMessageC;
+  
   
   
   App.Boot -> MainC.Boot;
   
   App.LightSensor -> LightSensor;
   App.TempSensor -> TempSensor;
-  App.Receive -> AMReceiverC;
-  App.AMSend -> AMSenderC;
+  App.Receive -> TimeSyncMessageC.TimeSyncAMSendRadio[AM_DATAMSG];
+  App.AMSend -> TimeSyncMessageC.Receive[AM_DATA_MSG];
+  //
+  //App.Receive -> AMReceiverC;
+  //App.AMSend -> AMSenderC;
   App.RadioControl -> ActiveMessageC;
   App.Leds -> LedsC;
   App.SensorTimer -> SensorTimer;
   App.GreenTimer -> GreenTimer;
   App.YellowTimer -> YellowTimer;
   App.RedTimer -> RedTimer;
-  App.Packet -> AMSenderC;
+  //App.Packet -> AMSenderC;
 
 
 
