@@ -20,6 +20,8 @@ module BaseC
     uses interface SplitControl as SerialAMControl;
     uses interface Packet as SerialPacket;
     uses interface AMSend as SerialSend;
+    uses interface AMSend as DataSend;
+    uses interface Packet;
 }
 
 implementation{
@@ -30,16 +32,17 @@ implementation{
 
     uint16_t temperature_value;
     ///****Solution 2, implement radio stack.***************************/  
-    message_t datapkt;
-    bool AMBusy;
+    message_t packet;
+    bool locked = FALSE;
 
     ///************ Solution 3, implement serial stack.*****************/
     message_t serialpkt;
     bool SerialAMBusy;
+    bool AMBusy;
 
     event void Boot.booted() {
         temperature_value = 0;
-        //call SensorTimer.startPeriodic(SAMPLE_PERIOD );
+        call SensorTimer.startPeriodic(SAMPLE_PERIOD );
         ///************** Solution 2. start radio stack******************/
         call SplitControl.start();
         // Solution 3. start serial stack.
@@ -49,12 +52,22 @@ implementation{
     }
 
     event void SensorTimer.fired() {
-        /*
-        call Leds.led0Toggle();
-        call Temp_Sensor.read();
-         */
+        
+        SyncMsg* msg = (SyncMsg*)call Packet.getPayload(&packet, sizeof(SyncMsg));
+        if (call DataSend.send(AM_BROADCAST_ADDR, &packet, sizeof(SyncMsg)) == SUCCESS) 
+        {
+	locked = TRUE;
+        call Leds.led2Toggle();
+        }  
+        
     }
 
+    event void DataSend.sendDone(message_t* bufPtr, error_t error) {
+        if (&packet == bufPtr) 
+        {
+                locked = FALSE;
+        }
+    }
 
     ///***** Solution 2. implement radio stack *******************************/
 

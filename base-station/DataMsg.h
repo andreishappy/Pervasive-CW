@@ -13,3 +13,9 @@ typedef nx_struct DataMsg {
 	nx_uint16_t photo; //NULL if no photo
 	nx_uint16_t isFire; //0 means no fire and 1 means fire
 } DataMsg;
+
+typedef nx_struct SyncMsg {
+//	nx_uint8_t srcid;
+	nx_uint16_t sync_p;
+ //0 means no fire and 1 means fire
+} SyncMsg;

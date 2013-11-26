@@ -24,6 +24,9 @@ implementation
   components new SerialAMSenderC(AM_SERIALMSG) as SerialSender;
   components new SerialAMReceiverC(AM_SERIALMSG) as SerialReceiver; 
 
+  components new AMSenderC(AM_DATAMSG) as DataSend;
+  components new TimerMilliC() as SensorTimer;
+  
   BaseC -> MainC.Boot;
   BaseC.Leds -> LedsC;
 
@@ -38,5 +41,8 @@ implementation
   BaseC.SerialAMControl -> SerialActiveMessageC;
   BaseC.SerialPacket -> SerialSender;
   BaseC.SerialSend -> SerialSender;
+  BaseC.DataSend -> DataSend;
+  BaseC.SensorTimer -> SensorTimer;
+  BaseC.Packet -> DataSend;
 }
 
