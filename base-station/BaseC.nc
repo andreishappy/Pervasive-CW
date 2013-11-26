@@ -1,6 +1,3 @@
-//## Solution code for tutorial 2 and start code of tutorial 3, of the wireless sensor network
-//## programing module of the pervasive systems course.
-
 #include "Timer.h"
 #include "DataMsg.h"
 #include "SerialMsg.h"
@@ -11,12 +8,10 @@ module BaseC
     uses interface Leds;
     uses interface Boot;
 
-    ///* Solution 2, implement the Radio stack*********/.
     uses interface SplitControl;
     uses interface CC2420Packet;
     uses interface Receive as DataReceive;
 
-    ///* Solution 3, implement the Serial stack.*************/
     uses interface SplitControl as SerialAMControl;
     uses interface Packet as SerialPacket;
     uses interface AMSend as SerialSend;
@@ -31,11 +26,9 @@ implementation{
     };
 
     uint16_t temperature_value;
-    ///****Solution 2, implement radio stack.***************************/  
     message_t packet;
     bool locked = FALSE;
 
-    ///************ Solution 3, implement serial stack.*****************/
     message_t serialpkt;
     bool SerialAMBusy;
     bool AMBusy;
@@ -43,12 +36,8 @@ implementation{
     event void Boot.booted() {
         temperature_value = 0;
         call SensorTimer.startPeriodic(SAMPLE_PERIOD );
-        ///************** Solution 2. start radio stack******************/
         call SplitControl.start();
-        // Solution 3. start serial stack.
         call SerialAMControl.start();
-
-
     }
 
     event void SensorTimer.fired() {
@@ -68,8 +57,6 @@ implementation{
                 locked = FALSE;
         }
     }
-
-    ///***** Solution 2. implement radio stack *******************************/
 
     event void SplitControl.stopDone(error_t err) {
         if (err == SUCCESS) {
@@ -95,9 +82,6 @@ implementation{
 
             }
 
-
-
-            ///***** Solution 3. implement serial stack****************************/
             s_pkt = (SerialMsg *) (call SerialPacket.getPayload(&serialpkt, sizeof (SerialMsg)));
 
             s_pkt->header = SERIALMSG_HEADER;
@@ -117,10 +101,6 @@ implementation{
         }
         return msg;
     }
-
-    ///*** END Solution 2. *********************************/
-
-    ///********** Solution 3. implement serial stack. ******/
 
     event void SerialAMControl.stopDone(error_t err) {
         if (err == SUCCESS) {
