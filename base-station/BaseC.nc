@@ -77,10 +77,6 @@ implementation{
 
         if (len == sizeof (DataMsg)) {
             d_pkt = (DataMsg *) payload;
-            if (d_pkt->srcid == 29) {
-                call Leds.led1Toggle();
-
-            }
 
             s_pkt = (SerialMsg *) (call SerialPacket.getPayload(&serialpkt, sizeof (SerialMsg)));
 
