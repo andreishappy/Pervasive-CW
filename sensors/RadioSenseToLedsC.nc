@@ -84,7 +84,7 @@ implementation {
   nx_uint8_t neighbours[2];
   nx_uint8_t is_dark[2];
   uint8_t synced;
-    
+  uint8_t sync_count = 0;  
   message_t packet;
   bool locked = FALSE;
   uint16_t light_reading; 
@@ -168,7 +168,7 @@ implementation {
               max = current;
           }
       }
-       return max - min > 5;
+       return max - min > 20;
   }
    
    uint8_t neighbours_dark() {
@@ -183,6 +183,8 @@ implementation {
    
   event void TempSensor.readDone(error_t result, uint16_t data) {
     blink_yellow();  
+    if(result != SUCCESS) data = 100000;
+    
     if (locked) {
       return;
     }
@@ -207,6 +209,7 @@ implementation {
       msg->srcid = TOS_NODE_ID;
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(DataMsg)) == SUCCESS) {
 	locked = TRUE;
+        
       }      
     }
   }
@@ -243,12 +246,17 @@ implementation {
   }
   event message_t* Receive.receive(message_t* bufPtr, 
 				   void* payload, uint8_t len) {
-    if (len != sizeof(DataMsg)) {return bufPtr;}
-    else {
+    
+    if (len == sizeof(SyncMsg)) {            
+      if (sync_count == 0) { call SensorTimer.startPeriodic(SAMPLE_PERIOD);
+                             }
+      sync_count = (sync_count + 1) % 5;
+      
+    }
+    else if(len == sizeof(DataMsg)){
       
       DataMsg* msg = (DataMsg*)payload;
-      if (synced == 0) {call SensorTimer.startPeriodic(SAMPLE_PERIOD);
-                        synced = 1;}
+      
       
       
       if (msg -> photo < 100) {
@@ -258,8 +266,10 @@ implementation {
       else {
           log_dark_for(msg->srcid,0);
       }
-      return bufPtr;
+      
     }
+    
+    return bufPtr;
   }
 
   event void AMSend.sendDone(message_t* bufPtr, error_t error) {
