@@ -69,7 +69,7 @@ module RadioSenseToLedsC @safe(){
     interface Timer<TMilli> as GreenTimer;
     interface Timer<TMilli> as RedTimer;
     interface Timer<TMilli> as YellowTimer;
-
+    
     interface Packet;
 
 
@@ -83,8 +83,7 @@ implementation {
   uint8_t temp_index = 100;
   nx_uint8_t neighbours[2];
   nx_uint8_t is_dark[2];
-  uint8_t synced;
-  uint8_t sync_count = 0;  
+  uint8_t synced; 
   message_t packet;
   bool locked = FALSE;
   uint16_t light_reading; 
@@ -248,9 +247,9 @@ implementation {
 				   void* payload, uint8_t len) {
     
     if (len == sizeof(SyncMsg)) {            
-      if (sync_count == 0) { call SensorTimer.startPeriodic(SAMPLE_PERIOD);
+      if (synced == 0) { call SensorTimer.startPeriodic(SAMPLE_PERIOD);
+                         synced = 1;
                              }
-      sync_count = (sync_count + 1) % 5;
       
     }
     else if(len == sizeof(DataMsg)){
