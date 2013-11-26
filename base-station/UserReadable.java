@@ -58,6 +58,6 @@ public class UserReadable implements MessageListener{
             return Double.NaN;
         }
         
-        return getTemperatureInKelvin(tempInADC) - 273;
+        return getTemperatureInKelvin(tempInADC) - (double) 273;
     }
 }
