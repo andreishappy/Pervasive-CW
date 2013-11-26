@@ -2,7 +2,7 @@
 #define DATAMSG_H
 
 enum {
-    SAMPLE_PERIOD = 4096,
+    SAMPLE_PERIOD = 1024,
     AM_DATAMSG = 9,
     DATAMSG_HEADER = 0x99,
 };
@@ -25,6 +25,12 @@ typedef struct neighbour {
     nx_uint8_t id;
     uint8_t isDark;
 } neighbour;
+
+typedef nx_struct SyncMsg {
+//	nx_uint8_t srcid;
+	nx_uint16_t sync_p;
+ //0 means no fire and 1 means fire
+} SyncMsg;
 
 
 #endif
