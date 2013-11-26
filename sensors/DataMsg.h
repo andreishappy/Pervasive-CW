@@ -2,8 +2,9 @@
 #define DATAMSG_H
 
 enum {
-	AM_DATAMSG = 9,
-	DATAMSG_HEADER = 0x99,
+    SAMPLE_PERIOD = 4096,
+    AM_DATAMSG = 9,
+    DATAMSG_HEADER = 0x99,
 };
 
 typedef nx_struct DataMsg {
