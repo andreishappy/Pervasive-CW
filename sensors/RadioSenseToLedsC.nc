@@ -83,7 +83,7 @@ implementation {
   uint8_t temp_index = 100;
   nx_uint8_t neighbours[2];
   nx_uint8_t is_dark[2];
-
+  uint8_t synced;
     
   message_t packet;
   bool locked = FALSE;
@@ -99,7 +99,8 @@ implementation {
         for (i=0; i<2; i++) {
             neighbours[i] = 0;
         }
-      call SensorTimer.startPeriodic(1024);
+      call SensorTimer.startPeriodic(SAMPLE_PERIOD);
+      synced = 0;
     }
   }
   event void RadioControl.stopDone(error_t err) {}
@@ -203,7 +204,6 @@ implementation {
           msg -> isFire = 1;
       }
       else msg -> isFire = 0;
-
       msg->srcid = TOS_NODE_ID;
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(DataMsg)) == SUCCESS) {
 	locked = TRUE;
@@ -245,7 +245,11 @@ implementation {
 				   void* payload, uint8_t len) {
     if (len != sizeof(DataMsg)) {return bufPtr;}
     else {
+      
       DataMsg* msg = (DataMsg*)payload;
+      if (synced == 0) {call SensorTimer.startPeriodic(SAMPLE_PERIOD);
+                        synced = 1;}
+      
       
       if (msg -> photo < 100) {
           log_dark_for(msg->srcid,1);
