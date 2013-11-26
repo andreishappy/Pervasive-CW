@@ -37,7 +37,7 @@ public class UserReadable implements MessageListener{
         System.out.println("Light: " + message.get_photo());
     }
     
-    private double getTemperatureInKelvin(short tempInADC){
+    private double getTemperatureInKelvin(int tempInADC){
         //if 0 then cannot get Kelvin
         if(tempInADC == 0){
             return Double.NaN;
@@ -53,7 +53,7 @@ public class UserReadable implements MessageListener{
         return answer;
     }
     
-    private double getTemperatureInCelsius(short tempInADC){
+    private double getTemperatureInCelsius(int tempInADC){
         if(tempInADC == 0){
             return Double.NaN;
         }

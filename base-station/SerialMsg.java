@@ -235,7 +235,7 @@ public class SerialMsg extends net.tinyos.message.Message {
 
     /////////////////////////////////////////////////////////
     // Accessor methods for field: temperature
-    //   Field type: short, signed
+    //   Field type: int, signed
     //   Offset (bits): 24
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
@@ -269,17 +269,17 @@ public class SerialMsg extends net.tinyos.message.Message {
     }
 
     /**
-     * Return the value (as a short) of the field 'temperature'
+     * Return the value (as a int) of the field 'temperature'
      */
-    public short get_temperature() {
-        return (short)getSIntBEElement(offsetBits_temperature(), 16);
+    public int get_temperature() {
+        return (int)getUIntBEElement(offsetBits_temperature(), 16);
     }
 
     /**
      * Set the value of the field 'temperature'
      */
-    public void set_temperature(short value) {
-        setSIntBEElement(offsetBits_temperature(), 16, value);
+    public void set_temperature(int value) {
+        setUIntBEElement(offsetBits_temperature(), 16, value);
     }
 
     /**
